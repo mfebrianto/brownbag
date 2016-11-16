@@ -25,52 +25,62 @@ function getFile() {
   return content;
 }
 
+function writeResult(data){
+  fs.writeFileSync("result.json", data.toString())
+}
+
+function writeFile(res) {
+  var cookie = res.headers['set-cookie'].toString();
+  console.log(cookie);
+  fs.writeFileSync("cookies.txt", cookie)
+}
+
 function executeQuery(data){
   console.log("executeQuery");
   console.log(data.toString());
 }
 
-function getTheCookie() {
-  console.log("inside the function")
+function getTheLogs() {
+  console.log("inside the function");
 
-  var uname='su0I2qPWVZm1cu'
-  var pword='3c2YfyW4r3QxvJK0eDMNYIWMD7O9OiasMMTh2jWtSO4FBrjAf4vrIQIsD9cP9Z95'
+  var uname='su0I2qPWVZm1cu';
+  var pword='3c2YfyW4r3QxvJK0eDMNYIWMD7O9OiasMMTh2jWtSO4FBrjAf4vrIQIsD9cP9Z95';
 
-  console.log("searchJob")
-  console.log(getFile())
+  var options = {
+    host: 'api.au.sumologic.com',
+    port: '443',
+    path: '/api/v1/search/jobs',
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Basic ' + new Buffer(uname + ':' + pword).toString('base64')
+    }
+  };
 
-  var getReq = https.request({
-        host: 'api.au.sumologic.com',
-	port: '443',
-        path: '/api/v1/search/jobs',
-	method: 'POST',
-	headers: {
-	  'Content-type': 'application/json',
-	  'Accept': 'application/json',
-	  'Authorization': 'Basic ' + new Buffer(uname + ':' + pword).toString('base64') 
-	}
-    }, function(res) {
-       console.log("\nstatus code: ", res.statusCode);
-       res.on('data', function(data) {
-	 
+  console.log("searchJob");
+  console.log(getFile());
 
-	fs.writeFileSync("cookies.txt",data.headers["set-cookie"].toString(), function(err){
-	   if(err) {
-             console.log(err);
-           }
-	   console.log("The file was saved!");
-	 });
+  var getReq = https.request(options, function(res) {
+    res.on('data', function (data) {
+      writeFile(res);
+      writeResult(data);
+      executeQuery();
+    });
 
-//	 executeQuery(data);
-       });
-
+    res.on('end', function(){
+      console.log('end')
+    });
   });
 
-  getReq.write(getFile())
+  getReq.write(getFile());
   getReq.end();
 
+  return true;
+};
 
+function executeQuery(){
+  console.log("executeQuery");
 }
 
-getTheCookie();
-console.log(cookie)
+getTheLogs();
