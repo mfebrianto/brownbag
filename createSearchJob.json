@@ -1,0 +1,6 @@
+{
+  "query": "_sourceCategory=\"app/auth_api/dev\"",
+  "from": "2016-11-14T00:00:01",
+  "to": "2016-11-14T23:45:00",
+  "timeZone": "ACT"
+}
