@@ -1,0 +1,15 @@
+exports.handler = (event, context, callback) => {
+    var AWS = require('aws-sdk');
+    var s3 = new AWS.S3();
+    var params = {Bucket: 'sumolog', Key: 'createSearchJob.json'};
+
+    //read from s3
+    s3.getObject(params, function(err, data) {
+        if (err) console.log(err, err.stack);
+        if (!err) {
+          createSearchJobContent = data.Body.toString('utf8');
+          console.log(createSearchJobContent);
+          callback(null);
+        }
+    });
+};
