@@ -5,6 +5,23 @@ var cookie;
 
 console.log("start");
 
+function createLogFile(){
+  fs.writeFileSync("app.log", "This is log file : \n\n");
+}
+
+function messagesOnTextFormat(jsonMessages){
+  var regex = /"_raw":".*?"/g;
+  var result = jsonMessages.toString().match(regex);
+  var file = "app.log";
+  var logStream;
+
+  for(var i = 0; i < result.length;i++){
+    logStream = fs.createWriteStream(file, {'flags': 'a'});
+    logStream.write(result[i]+"\n");
+  }
+  logStream.end('this is the end line');
+}
+
 function readCookie() {
   var content =fs.readFileSync('cookies.txt', 'utf8', function (err,data) {
     if (err) {
@@ -78,6 +95,8 @@ function getMetaData() {
 
       if (val == 'GATHERING RESULTS'){
         getMetaData();
+      } else {
+        getMessages();
       }
     });
   });
@@ -94,7 +113,11 @@ function getMessages(){
 
   var getReq = https.request(getOptions(url, 'GET', readCookie()), function(res) {
     res.on('data', function (data) {
-      console.log(data.toString());
+      messagesOnTextFormat(data.toString());
+    });
+
+    res.on('done', function (data) {
+
     });
   });
 
@@ -107,7 +130,6 @@ function getTheLogs() {
       writeFile(res);
       writeResult(data);
       getMetaData();
-      getMessages();
     });
 
     res.on('end', function(){
@@ -121,4 +143,5 @@ function getTheLogs() {
   return true;
 };
 
+createLogFile();
 getTheLogs();
