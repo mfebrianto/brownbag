@@ -4,10 +4,39 @@ const https = require( "https" );
 var queryId;
 var cookie;
 
+
+function messagesOnTextFormat(jsonMessages){
+  var regex = /"_raw":".*?"/g;
+  var result = jsonMessages.toString().match(regex);
+//   var file = "app.log";
+  var logStream;
+
+  for(var i = 0; i < result.length;i++){
+    // logStream = fs.createWriteStream(file, {'flags': 'a'});
+    // logStream.write(result[i]+"\n");
+    console.log(result[i]+"\n");
+  }
+//   logStream.end('this is the end line');
+}
+
 function getMessages(){
   console.log("getMessages");
   console.log(queryId);
   console.log(cookie);
+
+  var url = '/api/v1/search/jobs/'+ queryId +'/messages?offset=0&limit=100';
+
+  var getReq = https.request(getOptions(url, 'GET', cookie), function(res) {
+    res.on('data', function (data) {
+      messagesOnTextFormat(data.toString());
+    });
+
+    res.on('done', function (data) {
+
+    });
+  });
+
+  getReq.end();
 
 }
 
