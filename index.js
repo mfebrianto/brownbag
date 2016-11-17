@@ -3,8 +3,7 @@ var url = require( "url" );
 var fs = require('fs');
 var cookie;
 
-console.log("start")
-
+console.log("start");
 
 function readCookie() {
   var content =fs.readFileSync('cookies.txt', 'utf8', function (err,data) {
@@ -15,7 +14,6 @@ function readCookie() {
 
   return content;
 }
-
 
 function getOptions(path, method, cookie){
   var uname='su0I2qPWVZm1cu';
@@ -39,7 +37,6 @@ function getOptions(path, method, cookie){
     headers: headers
   };
 }
-
 
 function getFile(file) {
   if (file == null || file == undefined) {
@@ -67,16 +64,42 @@ function writeFile(res) {
   fs.writeFileSync("cookies.txt", cookie)
 }
 
+/*
+ * recursive command
+ */
 function getMetaData() {
   var queryId = JSON.parse(getFile('result.json'))['id'];
+  console.log('query_id : '+queryId);
 
   var getReq = https.request(getOptions('/api/v1/search/jobs/'+queryId,'GET', readCookie()), function(res) {
     res.on('data', function (data) {
-      console.log(data);
-    });
+      var val = JSON.parse(data.toString())['state'];
+      console.log(val);
 
+      if (val == 'GATHERING RESULTS'){
+        getMetaData();
+      }
+    });
   });
+
+  getReq.end();
 };
+
+function getMessages(){
+  var queryId = JSON.parse(getFile('result.json'))['id'];
+
+  var url = '/api/v1/search/jobs/'
+    + queryId
+    +'/messages?offset=0&limit=100';
+
+  var getReq = https.request(getOptions(url, 'GET', readCookie()), function(res) {
+    res.on('data', function (data) {
+      console.log(data.toString());
+    });
+  });
+
+  getReq.end();
+}
 
 function getTheLogs() {
   var getReq = https.request(getOptions('/api/v1/search/jobs','POST'), function(res) {
@@ -84,6 +107,7 @@ function getTheLogs() {
       writeFile(res);
       writeResult(data);
       getMetaData();
+      getMessages();
     });
 
     res.on('end', function(){
